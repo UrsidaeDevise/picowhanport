@@ -7,6 +7,11 @@ from machine import UART
 from machine import Pin
 from umqtt.simple import MQTTClient
 
+def passthrough(s):
+   if s is None:
+      return " "
+   else:
+      return s
 
 uart = UART(1, baudrate=115200, invert=UART.INV_RX, rx=Pin(5), timeout=11000)
 
@@ -31,7 +36,7 @@ while wlan.status() != 3:
 #led on when connected to wlan
 led.on()
 print("WIFI CONNECTED")
-mqc = MQTTClient("HANMeter", config.MQTTHost, 1883)
+mqc = MQTTClient("HANMeter", config.MQTTHost, 1883, config.MQTTUser, config.MQTTPass)
 try:
    mqc.connect()
 except:
@@ -42,10 +47,13 @@ mv = memoryview(workbuffert)
 
 while True:
    mvpos=0
-   s = uart.readline()
+   i=0
+   s = passthrough(uart.readline())
    while s[0] != ord('/'):
-      s = uart.readline()
-   #print("NEW HAN PACKAGE")
+      s = passthrough(uart.readline())
+      print("In loop", i)
+      i=i+1
+   print("NEW HAN PACKAGE")
 
    mv[mvpos : mvpos+len(s)] = s
    mvpos += len(s)
